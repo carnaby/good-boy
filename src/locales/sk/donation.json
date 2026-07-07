@@ -20,6 +20,19 @@
     "amountTitle": "Suma, ktorou chcem prispieť",
     "customAmountLabel": "Vlastná suma"
   },
+  "step2": {
+    "heading": "Potrebujeme od Vás zopár informácií",
+    "aboutTitle": "O vás",
+    "firstNameLabel": "Meno",
+    "firstNamePlaceholder": "Zadajte Vaše meno",
+    "lastNameLabel": "Priezvisko",
+    "lastNamePlaceholder": "Zadajte Vaše priezvisko",
+    "emailLabel": "E-mailová adresa",
+    "emailPlaceholder": "Zadajte Váš e-mail",
+    "phoneLabel": "Telefónne číslo",
+    "phonePlaceholder": "123 321 123",
+    "phoneNumberAriaLabel": "Telefónne číslo bez predvoľby"
+  },
   "phone": {
     "prefixLabel": "Predvoľba krajiny",
     "options": {
