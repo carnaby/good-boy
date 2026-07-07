@@ -1,0 +1,11 @@
+{
+  "appName": "Good Boy",
+  "nav": {
+    "contact": "Kontakt",
+    "about": "O projekte"
+  },
+  "actions": {
+    "back": "Späť",
+    "continue": "Pokračovať"
+  }
+}
