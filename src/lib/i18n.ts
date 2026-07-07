@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import common from '@/locales/sk/common.json';
 import donation from '@/locales/sk/donation.json';
 import about from '@/locales/sk/about.json';
+import contact from '@/locales/sk/contact.json';
 
 /**
  * Single i18next instance shared by the whole app. Only Slovak is supported
@@ -23,6 +24,7 @@ if (!i18next.isInitialized) {
         common,
         donation,
         about,
+        contact,
       },
     },
     interpolation: {
