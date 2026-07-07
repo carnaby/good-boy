@@ -4,6 +4,15 @@
     "amountRequired": "Zadajte sumu, ktorou chcete prispieť",
     "amountPositive": "Suma musí byť väčšia ako 0",
     "amountMax": "Maximálna výška príspevku je 10 000 €",
-    "amountInvalid": "Zadajte sumu s maximálne dvomi desatinnými miestami"
+    "amountInvalid": "Zadajte sumu s maximálne dvomi desatinnými miestami",
+    "firstNameRequired": "Zadajte Vaše meno",
+    "firstNameLength": "Meno musí mať 2 až 20 znakov",
+    "lastNameRequired": "Zadajte Vaše priezvisko",
+    "lastNameLength": "Priezvisko musí mať 2 až 30 znakov",
+    "emailRequired": "Zadajte Váš e-mail",
+    "emailInvalid": "Zadajte e-mail v správnom formáte",
+    "phoneRequired": "Zadajte Vaše telefónne číslo",
+    "phoneInvalid": "Zadajte platné telefónne číslo (9 číslic bez úvodnej nuly)",
+    "consentRequired": "Pre pokračovanie je potrebný súhlas so spracovaním osobných údajov"
   }
 }
