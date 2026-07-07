@@ -16,19 +16,30 @@ import { PHONE_PREFIXES, normalizePhone } from './phone';
 // the two stay in sync — `satisfies` fails to compile if they ever diverge.
 const helpTypeValues = ['shelter', 'foundation'] as const satisfies readonly HelpType[];
 
+// `amount` is `.nullable()` (with its "required" check living in the
+// object-level `superRefine` below) rather than a plain required `.number()`
+// on purpose: zod v4 skips `.superRefine` entirely whenever the base object
+// parse already failed, so a required `amount` would suppress the
+// `shelterId` issue on a first submit with nothing filled in — the form
+// would show only the amount error instead of both. Keeping the base parse
+// tolerant of the "empty" case lets both "required" issues surface together.
 export const stepHelpSchema = z
   .object({
     helpType: z.enum(helpTypeValues),
     shelterId: z.number().int().positive().nullable(),
     amount: z
-      .number({ error: 'validation.amountRequired' })
+      .number({ error: 'validation.amountInvalid' })
       .positive('validation.amountPositive')
       .max(10000, 'validation.amountMax')
-      .multipleOf(0.01, 'validation.amountInvalid'),
+      .multipleOf(0.01, 'validation.amountInvalid')
+      .nullable(),
   })
   .superRefine((val, ctx) => {
     if (val.helpType === 'shelter' && val.shelterId === null) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['shelterId'], message: 'validation.shelterRequired' });
+    }
+    if (val.amount === null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['amount'], message: 'validation.amountRequired' });
     }
   });
 

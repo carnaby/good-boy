@@ -44,11 +44,23 @@ describe('stepHelpSchema', () => {
   describe('amount validation', () => {
     it.each([
       {
-        name: 'amount missing fails with amountRequired',
-        input: { helpType: 'shelter', shelterId: 1 },
+        name: 'amount null fails with amountRequired',
+        input: { helpType: 'shelter', shelterId: 1, amount: null },
         valid: false,
         path: ['amount'],
         message: 'validation.amountRequired',
+      },
+      {
+        // The form itself always supplies `amount` (its empty value is
+        // `null`, never `undefined`), so a truly-missing key only happens
+        // for malformed programmatic input — the base invalid-type message
+        // is the right one there, and (unlike `null`) it short-circuits the
+        // superRefine.
+        name: 'amount missing (undefined) fails with amountInvalid',
+        input: { helpType: 'shelter', shelterId: 1 },
+        valid: false,
+        path: ['amount'],
+        message: 'validation.amountInvalid',
       },
       {
         name: 'amount 0 fails with amountPositive',
@@ -99,6 +111,22 @@ describe('stepHelpSchema', () => {
           expect(issue).toBeDefined();
           expect(issue?.message).toBe(message);
         }
+      }
+    });
+  });
+
+  describe('combined first-submit state', () => {
+    it('reports BOTH shelterRequired and amountRequired when nothing is filled in', () => {
+      // The whole point of `amount` being `.nullable()` with its required
+      // check in the object-level superRefine: a first submit with nothing
+      // filled must surface both errors at once, not just the amount one.
+      const result = stepHelpSchema.safeParse({ helpType: 'shelter', shelterId: null, amount: null });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const byPath = new Map(result.error.issues.map((i) => [i.path.join('.'), i.message]));
+        expect(byPath.get('shelterId')).toBe('validation.shelterRequired');
+        expect(byPath.get('amount')).toBe('validation.amountRequired');
       }
     });
   });

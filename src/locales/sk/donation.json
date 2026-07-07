@@ -6,6 +6,20 @@
     "confirmation": "Potvrdenie",
     "done": "dokončené"
   },
+  "step1": {
+    "heading": "Vyberte si možnosť, ako chcete pomôcť",
+    "helpShelter": "Prispieť konkrétnemu útulku",
+    "helpFoundation": "Prispieť celej nadácii",
+    "helpAriaLabel": "Spôsob pomoci",
+    "aboutTitle": "O projekte",
+    "shelterLabel": "Útulok",
+    "shelterOptional": "Nepovinné",
+    "shelterPlaceholder": "Vyberte útulok zo zoznamu",
+    "sheltersLoading": "Načítavam útulky…",
+    "sheltersError": "Útulky sa nepodarilo načítať.",
+    "amountTitle": "Suma, ktorou chcem prispieť",
+    "customAmountLabel": "Vlastná suma"
+  },
   "validation": {
     "shelterRequired": "Vyberte útulok zo zoznamu",
     "amountRequired": "Zadajte sumu, ktorou chcete prispieť",

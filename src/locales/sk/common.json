@@ -6,7 +6,8 @@
   },
   "actions": {
     "back": "Späť",
-    "continue": "Pokračovať"
+    "continue": "Pokračovať",
+    "retry": "Skúsiť znova"
   },
   "social": {
     "facebook": "Facebook",
