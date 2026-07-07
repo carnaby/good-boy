@@ -9,6 +9,8 @@ export interface CheckboxProps {
   onChange: (checked: boolean) => void;
   error?: boolean;
   disabled?: boolean;
+  /** Wires the hidden native input to an external error message, mirroring `fieldA11yProps`. */
+  'aria-describedby'?: string;
   children: ReactNode;
 }
 
@@ -79,7 +81,15 @@ function CheckIcon() {
   );
 }
 
-export function Checkbox({ id, checked, onChange, error, disabled, children }: CheckboxProps) {
+export function Checkbox({
+  id,
+  checked,
+  onChange,
+  error,
+  disabled,
+  'aria-describedby': ariaDescribedBy,
+  children,
+}: CheckboxProps) {
   return (
     <LabelRow htmlFor={id} $disabled={disabled}>
       <HiddenInput
@@ -88,6 +98,7 @@ export function Checkbox({ id, checked, onChange, error, disabled, children }: C
         checked={checked}
         disabled={disabled}
         aria-invalid={error || undefined}
+        aria-describedby={ariaDescribedBy}
         onChange={(event) => onChange(event.target.checked)}
       />
       <Box $checked={checked} $error={error}>

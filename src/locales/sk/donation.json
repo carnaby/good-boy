@@ -33,6 +33,35 @@
     "phonePlaceholder": "123 321 123",
     "phoneNumberAriaLabel": "Telefónne číslo bez predvoľby"
   },
+  "step3": {
+    "heading": "Skontrolujte si zadané údaje",
+    "summaryTitle": "Zhrnutie",
+    "helpTypeLabel": "Forma pomoci",
+    "shelterLabel": "Útulok",
+    "amountLabel": "Suma príspevku",
+    "nameLabel": "Meno a priezvisko",
+    "emailLabel": "E-mail",
+    "phoneLabel": "Telefónne číslo",
+    "helpTypeFoundation": "Finančný príspevok celej nadácii",
+    "helpTypeShelter": "Finančný príspevok útulku",
+    "consentLabel": "Súhlasím so spracovaním mojich osobných údajov",
+    "submit": "Odoslať formulár",
+    "edit": "Upraviť",
+    "editHelpAria": "Upraviť výber pomoci a sumy",
+    "editPersonalAria": "Upraviť osobné údaje",
+    "errors": {
+      "network": "Nepodarilo sa pripojiť k serveru. Skontrolujte internetové pripojenie a skúste to znova.",
+      "server": "Na serveri nastala chyba. Skúste to znova o chvíľu.",
+      "validation": "Server odmietol odoslané údaje. Skontrolujte ich, prosím, a skúste to znova.",
+      "fieldsIntro": "Skontrolujte, prosím, tieto údaje:",
+      "fieldNames": {
+        "firstName": "meno",
+        "lastName": "priezvisko",
+        "email": "e-mail",
+        "phone": "telefónne číslo"
+      }
+    }
+  },
   "phone": {
     "prefixLabel": "Predvoľba krajiny",
     "options": {

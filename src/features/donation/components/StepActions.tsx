@@ -9,6 +9,10 @@ export interface StepActionsProps {
   backDisabled?: boolean;
   nextLabel: string;
   nextType?: 'button' | 'submit';
+  /** Disables the next/submit button, e.g. while a mutation is in flight. */
+  nextDisabled?: boolean;
+  /** Sets `aria-busy` on the next/submit button without changing its label. */
+  nextBusy?: boolean;
 }
 
 const Row = styled.div`
@@ -51,7 +55,14 @@ function ArrowRightIcon() {
  * renders when `onBack` is supplied — Step 1 still passes `onBack` but with
  * `backDisabled` (per Figma, it renders disabled rather than being absent).
  */
-export function StepActions({ onBack, backDisabled, nextLabel, nextType = 'submit' }: StepActionsProps) {
+export function StepActions({
+  onBack,
+  backDisabled,
+  nextLabel,
+  nextType = 'submit',
+  nextDisabled,
+  nextBusy,
+}: StepActionsProps) {
   const { t } = useTranslation('common');
 
   return (
@@ -63,7 +74,13 @@ export function StepActions({ onBack, backDisabled, nextLabel, nextType = 'submi
       ) : (
         <span />
       )}
-      <Button type={nextType} variant="primary" iconRight={<ArrowRightIcon />}>
+      <Button
+        type={nextType}
+        variant="primary"
+        iconRight={<ArrowRightIcon />}
+        disabled={nextDisabled}
+        aria-busy={nextBusy ? 'true' : undefined}
+      >
         {nextLabel}
       </Button>
     </Row>
