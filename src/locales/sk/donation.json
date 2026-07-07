@@ -1,4 +1,11 @@
 {
+  "steps": {
+    "ariaLabel": "Kroky formulára",
+    "help": "Výber útulku",
+    "personal": "Osobné údaje",
+    "confirmation": "Potvrdenie",
+    "done": "dokončené"
+  },
   "validation": {
     "shelterRequired": "Vyberte útulok zo zoznamu",
     "amountRequired": "Zadajte sumu, ktorou chcete prispieť",
