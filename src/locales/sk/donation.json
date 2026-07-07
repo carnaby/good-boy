@@ -1,0 +1,9 @@
+{
+  "validation": {
+    "shelterRequired": "Vyberte útulok zo zoznamu",
+    "amountRequired": "Zadajte sumu, ktorou chcete prispieť",
+    "amountPositive": "Suma musí byť väčšia ako 0",
+    "amountMax": "Maximálna výška príspevku je 10 000 €",
+    "amountInvalid": "Zadajte sumu s maximálne dvomi desatinnými miestami"
+  }
+}
