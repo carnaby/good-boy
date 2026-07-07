@@ -31,6 +31,10 @@ export interface ThemeColors {
   error: string;
   /** text rendered on top of primary-colored buttons */
   inverseText: string;
+  /** SK/CZ flag asset only (`flags.tsx`) — flag-standard blue, not a UI color */
+  flagBlue: string;
+  /** SK/CZ flag asset only (`flags.tsx`) — flag-standard red, not a UI color */
+  flagRed: string;
 }
 
 export interface TypographyStyle {
@@ -97,6 +101,8 @@ export const theme: Theme = {
     white: '#FFFFFF',
     error: '#BE123C',
     inverseText: '#FAFAFA',
+    flagBlue: '#0052B4',
+    flagRed: '#D80027',
   },
   typography: {
     headingXl: {

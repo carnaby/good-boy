@@ -20,6 +20,13 @@
     "amountTitle": "Suma, ktorou chcem prispieť",
     "customAmountLabel": "Vlastná suma"
   },
+  "phone": {
+    "prefixLabel": "Predvoľba krajiny",
+    "options": {
+      "sk": "Slovensko",
+      "cz": "Česko"
+    }
+  },
   "validation": {
     "shelterRequired": "Vyberte útulok zo zoznamu",
     "amountRequired": "Zadajte sumu, ktorou chcete prispieť",
