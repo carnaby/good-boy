@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useTranslation } from 'react-i18next';
+import { CheckIcon } from './icons';
 
 export interface ToastProps {
   message: string;
@@ -13,8 +14,28 @@ export interface ToastProps {
 
 const DEFAULT_AUTO_DISMISS_MS = 6000;
 
+// Slide-up + fade entrance (no existing design covers this state, so this is
+// a from-scratch treatment). Same shape as `WizardLayout`'s `stepEnter`
+// (opacity + a single `translateY`, `ease-out`) — just a taller offset and a
+// touch longer since this is a bigger, more attention-grabbing surface than
+// a step transition.
+// The "to" keyframe (translateX(-50%) translateY(0)) matches `Wrapper`'s own
+// static `transform` below exactly, so once the animation finishes and the
+// element falls back to its plain (non-animated) style, there's no visual
+// snap.
+const toastEnter = keyframes`
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+`;
+
 // Bottom-center (over top-center): `StepHeading` focuses itself on mount, so
-// a toast surfacing right after a step transition (e.g. Task 13's "saved"
+// a toast surfacing right after a step transition (e.g. a "saved"
 // confirmation) never visually competes with the just-announced heading at
 // the top of the page.
 const Wrapper = styled.div`
@@ -31,16 +52,37 @@ const Wrapper = styled.div`
   padding-left: ${({ theme }) => theme.spacing(5)};
   border-radius: ${({ theme }) => theme.radii.md};
   background: ${({ theme }) => theme.colors.white};
-  /* One-off shadow literal: the theme has no elevation/shadow token, and the
-     task brief explicitly allows a one-off box-shadow here. */
-  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.16);
+  border: 1px solid ${({ theme }) => theme.colors.primaryLight};
+  /* One-off shadow literal: the design system has no elevation/shadow token,
+     so a one-off box-shadow here is intentional. A touch stronger than a
+     typical resting-state card shadow (still soft, no hard edge) so this
+     reads as a deliberately elevated, hard-to-miss surface. */
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.2);
+  animation: ${toastEnter} ${({ theme }) => theme.motion.medium} ${({ theme }) => theme.motion.easeOut};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
+const IconCircle = styled.span`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primaryLight};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const Message = styled.p`
   margin: 0;
   flex: 1 1 auto;
-  font-size: ${({ theme }) => theme.typography.body.fontSize};
-  line-height: ${({ theme }) => theme.typography.body.lineHeight};
+  font-size: ${({ theme }) => theme.typography.bodySemibold.fontSize};
+  line-height: ${({ theme }) => theme.typography.bodySemibold.lineHeight};
+  font-weight: ${({ theme }) => theme.typography.bodySemibold.fontWeight};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
@@ -56,6 +98,7 @@ const CloseButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.colors.textMuted};
   cursor: pointer;
+  transition: color ${({ theme }) => theme.motion.fast} ease;
 
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
@@ -87,6 +130,12 @@ function CloseIcon() {
  * save completing, …), never as part of the initial SSR/hydration pass, so
  * `document` is always available by the time this renders.
  *
+ * Deliberately prominent (a plain version proved easy to miss) — a leading
+ * check glyph in a `primaryLight` circle, a
+ * `primaryLight` border + a slightly stronger shadow, semibold message text,
+ * and a slide-up/fade entrance (`prefers-reduced-motion: reduce` disables it,
+ * matching `WizardLayout`'s step-enter convention).
+ *
  * Auto-dismisses after `autoDismissMs` (default 6s) by calling `onClose` —
  * it's the caller's job to stop rendering `<Toast>` in response (typically
  * unmounting it, which also cancels the timer below). The timer is re-armed
@@ -112,6 +161,9 @@ export function Toast({ message, onClose, autoDismissMs = DEFAULT_AUTO_DISMISS_M
 
   return createPortal(
     <Wrapper role="status">
+      <IconCircle aria-hidden="true">
+        <CheckIcon size={16} />
+      </IconCircle>
       <Message>{message}</Message>
       <CloseButton type="button" aria-label={t('actions.close')} onClick={onClose}>
         <CloseIcon />

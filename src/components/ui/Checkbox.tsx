@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import type { ReactNode } from 'react';
 import { CheckIcon } from './icons';
 
@@ -40,6 +40,28 @@ const LabelRow = styled.label<{ $disabled?: boolean }>`
   opacity: ${({ $disabled }) => ($disabled ? 0.32 : 1)};
 `;
 
+// Check-state "pop": the glyph only ever exists in the DOM while `$checked`
+// (see the conditional render below), so a mount-time `animation` — not a
+// `transition`, which needs the element to already be present — is what
+// actually plays when it appears.
+const checkPop = keyframes`
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
+`;
+
+const CheckMark = styled.span`
+  display: inline-flex;
+  animation: ${checkPop} ${({ theme }) => theme.motion.fast} ${({ theme }) => theme.motion.easeOut};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
 const Box = styled.span<{ $checked: boolean; $error?: boolean }>`
   flex-shrink: 0;
   display: inline-flex;
@@ -50,6 +72,7 @@ const Box = styled.span<{ $checked: boolean; $error?: boolean }>`
   border-radius: 4px;
   color: ${({ theme }) => theme.colors.white};
   background: ${({ theme, $checked }) => ($checked ? theme.colors.primary : theme.colors.white)};
+  transition: background-color ${({ theme }) => theme.motion.fast} ease, border-color ${({ theme }) => theme.motion.fast} ease;
   border: 1px solid
     ${({ theme, $checked, $error }) => {
       if ($error) return theme.colors.error;
@@ -89,7 +112,11 @@ export function Checkbox({
         onChange={(event) => onChange(event.target.checked)}
       />
       <Box $checked={checked} $error={error}>
-        {checked ? <CheckIcon size={12} /> : null}
+        {checked ? (
+          <CheckMark>
+            <CheckIcon size={12} />
+          </CheckMark>
+        ) : null}
       </Box>
       <LabelText>{children}</LabelText>
     </LabelRow>

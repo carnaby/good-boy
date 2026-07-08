@@ -10,10 +10,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // Figma "Button" component (Components page, node 273:2331 Primary/xl/Base and
-// its Secondary/Disable siblings) renders every size at `rounded-[8px]` — the
-// task brief's "radius md (16)" note doesn't match what get_design_context
-// returned for the real button instances (both here and in the Step 1 frame),
-// so this follows the direct Figma read: `theme.radii.sm`.
+// its Secondary/Disable siblings) renders every size at `rounded-[8px]` — a
+// radius measured directly from the real button instances (both here and in
+// the Step 1 frame), so this uses `theme.radii.sm` rather than the larger
+// `md` (16) token its name might otherwise suggest.
 const StyledButton = styled.button<{ $variant: ButtonProps['variant'] }>`
   display: inline-flex;
   align-items: center;
@@ -28,6 +28,8 @@ const StyledButton = styled.button<{ $variant: ButtonProps['variant'] }>`
   font-weight: ${({ theme }) => theme.typography.bodySemibold.fontWeight};
   white-space: nowrap;
   cursor: pointer;
+  transition: background-color ${({ theme }) => theme.motion.fast} ease,
+    color ${({ theme }) => theme.motion.fast} ease, opacity ${({ theme }) => theme.motion.fast} ease;
 
   ${({ $variant, theme }) =>
     $variant === 'primary'
@@ -37,8 +39,8 @@ const StyledButton = styled.button<{ $variant: ButtonProps['variant'] }>`
         `
       : css`
           background: ${theme.colors.surface};
-          /* Figma's Secondary/Base button text is #374151 = theme.colors.textSecondary
-             (the task brief said "textPrimary" — this follows the direct read). */
+          /* Figma's Secondary/Base button text is #374151 = theme.colors.textSecondary,
+             sampled directly from the live component instance. */
           color: ${theme.colors.textSecondary};
         `}
 

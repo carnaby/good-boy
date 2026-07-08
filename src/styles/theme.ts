@@ -10,8 +10,6 @@ export interface ThemeColors {
   primary: string;
   /** active/selected backgrounds */
   primaryLight: string;
-  /** focus ring / subtle highlight */
-  primaryFocus: string;
   /** headings, primary body text */
   textPrimary: string;
   /** secondary text */
@@ -75,6 +73,15 @@ export interface ThemeBreakpoints {
   lg: string;
 }
 
+export interface ThemeMotion {
+  /** Interactive state transitions — hover/active color & background changes (buttons, chips, links). */
+  fast: string;
+  /** Entrance/exit animations — toast, dropdown/listbox open. */
+  medium: string;
+  /** Standard easing for entrance animations (paired with `fast`/`medium`). */
+  easeOut: string;
+}
+
 export interface Theme {
   colors: ThemeColors;
   typography: ThemeTypography;
@@ -84,13 +91,14 @@ export interface Theme {
   breakpoints: ThemeBreakpoints;
   /** CSS font-family stack; references the `next/font/google` CSS variable set on <html> */
   fontFamily: string;
+  /** Shared animation/transition durations + easing — see `global.ts` for the app-wide reduced-motion override. */
+  motion: ThemeMotion;
 }
 
 export const theme: Theme = {
   colors: {
     primary: '#4F46E5',
     primaryLight: '#E0E7FF',
-    primaryFocus: 'rgba(165, 180, 252, 0.1)',
     textPrimary: '#111827',
     textSecondary: '#374151',
     textTertiary: '#4B5563',
@@ -161,4 +169,9 @@ export const theme: Theme = {
   },
   fontFamily:
     "var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  motion: {
+    fast: '150ms',
+    medium: '250ms',
+    easeOut: 'ease-out',
+  },
 };

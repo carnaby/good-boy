@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { SkFlag, CzFlag } from '@/components/ui/flags';
@@ -62,6 +62,21 @@ const Chevron = styled.svg`
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
+// Subtle open animation (no existing design covers this state) — the
+// listbox is absolutely positioned with no static `transform` of its own, so
+// the "to" keyframe (translateY(0)) hands off cleanly to the plain,
+// non-animated layout once the animation ends.
+const listboxEnter = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
 const Listbox = styled.div`
   position: absolute;
   top: calc(100% + ${({ theme }) => theme.spacing(1)});
@@ -75,6 +90,11 @@ const Listbox = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.sm};
   background: ${({ theme }) => theme.colors.white};
+  animation: ${listboxEnter} ${({ theme }) => theme.motion.fast} ${({ theme }) => theme.motion.easeOut};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 // Selected always reads as `primaryLight` regardless of keyboard position;
@@ -137,7 +157,6 @@ export function PrefixCombobox({ id, value, onChange, labelledBy }: PrefixCombob
   const [activeIndex, setActiveIndex] = useState(() => PREFIX_ORDER.indexOf(value));
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Click-outside-closes: a document-level listener attached only while
   // open, torn down on close/unmount so no listener ever leaks between tests
@@ -237,7 +256,6 @@ export function PrefixCombobox({ id, value, onChange, labelledBy }: PrefixCombob
   return (
     <Wrapper ref={wrapperRef}>
       <Trigger
-        ref={triggerRef}
         id={id}
         type="button"
         role="combobox"

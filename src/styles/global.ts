@@ -82,4 +82,25 @@ export const GlobalStyle = createGlobalStyle`
     outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
+
+  /* Standard app-wide reduced-motion override: collapses every CSS
+     transition/animation duration to effectively instant rather than
+     removing them, which is simpler than (and makes redundant) an
+     individual "@media (prefers-reduced-motion: reduce) { transition: none }"
+     guard on each component that only ever uses \`transition\` (Button,
+     AmountPicker's chips, SegmentedControl's options, Checkbox's box, the
+     footer nav links, ...). Components whose motion is a mount-time
+     \`animation\` (WizardLayout's step-enter, Toast's entrance, the
+     PrefixCombobox listbox open, Checkbox's check pop) still carry their own
+     explicit \`animation: none\` guard for clarity/defense-in-depth, matching
+     the existing WizardLayout convention. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 `;

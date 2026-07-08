@@ -309,7 +309,7 @@ describe('PrefixCombobox', () => {
 
     // The trigger conveys the selection to AT via its accessible name, but
     // renders no prefix digits — those live inside the phone number input
-    // (PhoneField, Task 11). Without `labelledBy` there is no hidden span
+    // (PhoneField's own job). Without `labelledBy` there is no hidden span
     // either, so the trigger has NO text content at all.
     expect(trigger).not.toHaveTextContent(/\+42/);
     expect(trigger.textContent).toBe('');

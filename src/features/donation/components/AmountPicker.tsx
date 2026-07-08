@@ -27,7 +27,7 @@ const Wrapper = styled.div`
   width: 100%;
 `;
 
-// The underline IS the focus indicator (owner decision — no outline ring):
+// The underline IS the focus indicator (intentional — no outline ring):
 // idle it's a 2px gray \`border\`-token line; while the input inside has
 // focus (\`:focus-within\`) it becomes 3px \`primary\`. That color + thickness
 // change is the WCAG-visible focus indicator — do NOT re-add an outline
@@ -102,6 +102,7 @@ const Chip = styled.button<{ $active: boolean }>`
   line-height: ${({ theme }) => theme.typography.bodyMedium.lineHeight};
   font-weight: ${({ theme }) => theme.typography.bodyMedium.fontWeight};
   cursor: pointer;
+  transition: background-color ${({ theme }) => theme.motion.fast} ease, color ${({ theme }) => theme.motion.fast} ease;
   background: ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.surface)};
   color: ${({ $active, theme }) => ($active ? theme.colors.inverseText : theme.colors.textPrimary)};
 `;
@@ -115,7 +116,7 @@ function parseAmountInput(raw: string): number | null {
 }
 
 /**
- * Amount input with two-way chips <-> input sync (owner decision): the RHF
+ * Amount input with two-way chips <-> input sync: the RHF
  * `amount` value is the single source of truth. The custom input always
  * displays the current amount (a chip click writes its number into the
  * input), a chip is active iff `value === chip` — so typing "20" lights the

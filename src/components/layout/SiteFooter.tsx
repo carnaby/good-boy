@@ -45,10 +45,15 @@ const SocialLink = styled.a`
   padding: ${({ theme }) => theme.spacing(4)};
   margin: -${({ theme }) => theme.spacing(4)};
   color: ${({ theme }) => theme.colors.textTertiary};
+  transition: color ${({ theme }) => theme.motion.fast} ease;
 
   svg {
     width: 16px;
     height: 16px;
+  }
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
 
@@ -56,6 +61,11 @@ const NavLink = styled(Link)`
   font-size: ${({ theme }) => theme.typography.body.fontSize};
   line-height: ${({ theme }) => theme.typography.body.lineHeight};
   color: ${({ theme }) => theme.colors.textTertiary};
+  transition: color ${({ theme }) => theme.motion.fast} ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
 `;
 
 // Hand-coded minimalist glyphs (Figma's Social Icon components require a
