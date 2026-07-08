@@ -18,14 +18,26 @@ export interface PageLayoutProps {
 // 16px side padding below \`md\` (was a flat 80px at every viewport, which
 // left only ~215px of content width at 375px) growing to the full 80px
 // Figma gutter from \`md\` up.
+//
+// 1440px canvas cap, applies to both this and the wizard layout:
+// this already satisfies it without a change — `max-width: 1280px` is
+// smaller than the 1440px canvas, so this box never exceeds 1440px and
+// `margin: 0 auto` already centers it, letting `surfacePage` (set on
+// `<body>`, see `src/styles/global.ts`) show through on both sides at any
+// viewport wider than 1280px (e.g. ~80px extra on each side at 1440px, on
+// top of the 80px padding already inside the box).
 const Container = styled.div`
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing(10)} ${({ theme }) => theme.spacing(4)};
+  /* Bottom padding is deliberately larger so content never sits flush
+     against the footer. */
+  padding: ${({ theme }) => theme.spacing(10)} ${({ theme }) => theme.spacing(4)}
+    ${({ theme }) => theme.spacing(16)};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    padding: ${({ theme }) => theme.spacing(15)} ${({ theme }) => theme.spacing(20)};
+    padding: ${({ theme }) => theme.spacing(15)} ${({ theme }) => theme.spacing(20)}
+      ${({ theme }) => theme.spacing(24)};
   }
 `;
 

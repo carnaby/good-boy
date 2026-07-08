@@ -22,7 +22,9 @@ const LABEL_KEYS: Record<HelpType, string> = {
 const Group = styled.div`
   display: flex;
   width: 100%;
-  height: 60px;
+  /* min-height instead of a fixed height: long labels may wrap on narrow
+     viewports and the whole control must grow rather than clip the text. */
+  min-height: 60px;
   padding: ${({ theme }) => theme.spacing(1)};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.md};
@@ -39,10 +41,12 @@ const Option = styled.button<{ $active: boolean }>`
      60px-tall outer track (theme.radii.md = 16px) — no token matches this
      exactly, so it's a literal measured off the design PNG. */
   border-radius: 12px;
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
   font-size: ${({ theme }) => theme.typography.bodySemibold.fontSize};
   line-height: ${({ theme }) => theme.typography.bodySemibold.lineHeight};
   font-weight: ${({ theme }) => theme.typography.bodySemibold.fontWeight};
   cursor: pointer;
+  transition: background-color ${({ theme }) => theme.motion.fast} ease, color ${({ theme }) => theme.motion.fast} ease;
 
   ${({ $active, theme }) =>
     $active

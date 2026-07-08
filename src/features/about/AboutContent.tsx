@@ -90,13 +90,15 @@ const MetricsBand = styled.div`
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: space-around;
   }
 `;
 
 const MetricItem = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: ${({ theme }) => theme.spacing(2)};
   /* metric.lineHeight (72px) + gap (8px) + body.lineHeight (24px) — fixed so
      the loading -> loaded swap never shifts surrounding layout. */

@@ -2,7 +2,7 @@
 
 import styled, { css } from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
+import { VisuallyHidden, visuallyHiddenStyles } from '@/components/ui/VisuallyHidden';
 import { CheckIcon } from '@/components/ui/icons';
 
 export interface StepperProps {
@@ -26,16 +26,33 @@ const List = styled.ol`
   width: 100%;
 `;
 
-const Item = styled.li`
+// Mobile overflow fix: labels collapse to the active step below \`md\` so the
+// row can never overflow narrow viewports; hidden labels stay in the
+// accessibility tree (see \`Label\` below). Below \`md\`, a non-active,
+// non-last item's only in-flow content is its 32px circle — \`flex: 0 0 auto\`
+// sizes it to exactly that instead of stretching it to an equal third,
+// freeing up the row for the active item's label. The active item gets
+// \`1 1 auto\` so it can grow into that freed space (and still shrink under
+// \`min-width: 0\` as a last resort — see \`Label\`'s own overflow/ellipsis
+// fallback). \`≥md\` restores the original equal-thirds split unconditionally,
+// since every label is visible there again. The last item is always
+// content-sized (never has a connector to stretch), at every width and
+// status — that higher-specificity \`:last-child\` rule wins over both the
+// status-based default and the \`≥md\` override below.
+const Item = styled.li<{ $status: StepStatus }>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing(2)};
   height: 32px;
-  flex: 1 0 0;
   min-width: 0;
+  flex: ${({ $status }) => ($status === 'current' ? '1 1 auto' : '0 0 auto')};
 
   &:last-child {
     flex: 0 0 auto;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex: 1 0 0;
   }
 `;
 
@@ -73,11 +90,40 @@ const Circle = styled.span<{ $status: StepStatus }>`
   }}
 `;
 
+// Mobile overflow fix, part 2: below \`md\`, a non-active label is visually
+// hidden via the same clip-rect technique as \`VisuallyHidden\` (NOT
+// \`display: none\`, which would drop it from the accessibility tree) —
+// screen readers still announce it, but \`position: absolute\` also takes it
+// out of flow so it stops competing with the other items for row width.
+// \`≥md\` resets it back to normal flow so every label is visible again,
+// unchanged from before this fix. \`min-width: 0\` + \`overflow/text-overflow\`
+// on the active label is a belt-and-suspenders truncation fallback: even if
+// some future translation is too long for the space \`Item\` above frees up
+// at the very narrowest supported width (320px), it ellipsizes instead of
+// forcing a horizontal scrollbar.
 const Label = styled.span<{ $status: StepStatus }>`
   font-size: ${({ theme }) => theme.typography.body.fontSize};
   line-height: ${({ theme }) => theme.typography.body.lineHeight};
   color: ${({ theme, $status }) => ($status === 'upcoming' ? theme.colors.border : theme.colors.textPrimary)};
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+
+  ${({ $status, theme }) =>
+    $status !== 'current' &&
+    css`
+      ${visuallyHiddenStyles}
+
+      @media (min-width: ${theme.breakpoints.md}) {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        clip: auto;
+      }
+    `}
 `;
 
 const Connector = styled.span`
@@ -109,7 +155,7 @@ export function Stepper({ current }: StepperProps) {
           const isLast = index === STEP_KEYS.length - 1;
 
           return (
-            <Item key={key} aria-current={status === 'current' ? 'step' : undefined}>
+            <Item key={key} $status={status} aria-current={status === 'current' ? 'step' : undefined}>
               <Circle $status={status}>
                 {status === 'done' ? (
                   <>

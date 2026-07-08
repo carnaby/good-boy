@@ -73,8 +73,18 @@ const PrefixStatic = styled.span`
 // No `outline: none` override here (unlike `AmountPicker`'s underline
 // substitute) — this input keeps the global `:focus-visible` ring as its
 // visible focus indicator, same as `TextInput`.
+//
+// `width: 0` (mobile overflow fix, round 2): an `<input>` has a
+// ~220px default intrinsic width (`size="20"`), and `min-width: 0` alone
+// only lets it shrink at *layout* time — the intrinsic width still feeds the
+// flex container's min-content and propagated all the way up into the
+// wizard's grid track, stretching the page horizontally on mobile. A
+// definite zero width kills that contribution at the source; the rendered
+// width is unaffected because `flex: 1 1 0` (basis 0 + grow) is what
+// actually sizes it inside `NumberBox`.
 const NumberInput = styled.input`
   flex: 1 1 0;
+  width: 0;
   min-width: 0;
   height: 100%;
   border: none;
@@ -148,8 +158,7 @@ export function PhoneField({ id, prefix, onPrefixChange, number, onNumberChange,
           <NumberInput
             ref={inputRef}
             id={id}
-            type="text"
-            inputMode="tel"
+            type="tel"
             autoComplete="tel-national"
             placeholder={t('step2.phonePlaceholder')}
             aria-label={t('step2.phoneNumberAriaLabel')}
