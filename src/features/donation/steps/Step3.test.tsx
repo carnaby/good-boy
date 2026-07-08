@@ -67,6 +67,18 @@ describe('Step3', () => {
     expect(screen.getByText('+421 902 237 207')).toBeInTheDocument();
   });
 
+  it('shows an em dash for the shelter name when the shelters query fails, never a blank value', async () => {
+    seedFullDraft();
+    server.use(http.get('*/api/v1/shelters/', () => new HttpResponse(null, { status: 500 })));
+    renderWithProviders(<Step3 />);
+
+    // Same retry-backoff rationale as Step1's shelters-failure test: the
+    // QueryClient (src/lib/providers.tsx) retries once before settling into
+    // the error state, well past the default `findBy*` timeout.
+    const label = await screen.findByText('Útulok', {}, { timeout: 3000 });
+    expect(label.nextElementSibling).toHaveTextContent('—');
+  });
+
   it('omits the "Útulok" row entirely when shelterId is null (foundation donation without a shelter)', async () => {
     seedFullDraft({ helpType: 'foundation', shelterId: null });
     renderWithProviders(<Step3 />);

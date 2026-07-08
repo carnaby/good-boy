@@ -65,9 +65,10 @@ const GroupTitle = styled.h2`
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-// Figma's step 3 frame has no edit links at all — the product spec requires
-// them regardless, so this is a from-scratch "subtle text link" treatment
-// (primary color, label-sized) rather than a direct-from-Figma read.
+// Figma's step 3 frame has no edit links at all — the UX still needs them
+// (so a supporter can jump back and fix an earlier step), so this is a
+// from-scratch "subtle text link" treatment (primary color, label-sized)
+// rather than a direct-from-Figma read.
 const EditLink = styled(Link)`
   font-size: ${({ theme }) => theme.typography.labelMedium.fontSize};
   line-height: ${({ theme }) => theme.typography.labelMedium.lineHeight};

@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
 /**
- * Response schemas + request/response types for the shelters API, pinned to
- * the contract empirically verified against the live API (see
- * `.superpowers/sdd/task-4-brief.md`) rather than to any published spec.
- * `z.object` strips-but-tolerates unknown keys by default, so extra fields
- * the API adds later won't break parsing.
+ * Response schemas + request/response types for the shelters/results/contribute
+ * endpoints, mirroring the live API contract at
+ * https://frontend-assignment-api.goodrequest.dev/apidoc/ as verified
+ * empirically against real requests — e.g. the apidoc doesn't document
+ * `messages[].path` on a 400 response, but the server does send it (see
+ * `apiMessageSchema` below). `z.object` strips-but-tolerates unknown keys by
+ * default, so extra fields the API adds later won't break parsing.
  */
 
 const shelterSchema = z.object({

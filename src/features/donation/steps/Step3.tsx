@@ -50,9 +50,9 @@ const AlertBox = styled.div`
   padding: ${({ theme }) => theme.spacing(4)};
   border-radius: ${({ theme }) => theme.radii.sm};
   border: 1px solid ${({ theme }) => theme.colors.error};
-  /* One-off rgba of the error token for a low-alpha tint background — the
-     theme has no "error surface" token, and the task brief explicitly
-     allows a one-off rgba here. */
+  /* One-off rgba of the error token for a low-alpha tint background: the
+     design system has no "error surface" token, so a one-off rgba of the
+     error color here is intentional rather than an oversight. */
   background: rgba(190, 18, 60, 0.06);
 `;
 
@@ -137,6 +137,9 @@ function formatPhone(prefix: string, number: string): string {
   const grouped = match ? `${match[1]} ${match[2]} ${match[3]}` : number;
   return `${prefix} ${grouped}`;
 }
+
+/** Punctuation, not copy — used as-is regardless of locale. */
+const SHELTER_NAME_FALLBACK = '—';
 
 interface ErrorPanelProps {
   error: ApiError;
@@ -354,7 +357,11 @@ export function Step3() {
   }, [hasMounted, completedStep, submitSucceeded, router]);
 
   const canRenderForm = hasMounted && completedStep >= 2;
-  const shelterName = shelters?.find((shelter) => shelter.id === shelterId)?.name ?? '';
+  // Em dash rather than a blank string: the shelters query can still be
+  // loading, or can have errored, at the moment this renders — either way
+  // there's no name to show yet, and a blank "Útulok" value would read as a
+  // rendering bug rather than a known, temporary gap.
+  const shelterName = shelters?.find((shelter) => shelter.id === shelterId)?.name ?? SHELTER_NAME_FALLBACK;
 
   return (
     <WizardLayout image="/images/dog-steps.jpg">

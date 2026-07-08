@@ -8,7 +8,6 @@ export interface StepActionsProps {
   onBack?: () => void;
   backDisabled?: boolean;
   nextLabel: string;
-  nextType?: 'button' | 'submit';
   /** Disables the next/submit button, e.g. while a mutation is in flight. */
   nextDisabled?: boolean;
   /** Sets `aria-busy` on the next/submit button without changing its label. */
@@ -77,7 +76,6 @@ export function StepActions({
   onBack,
   backDisabled,
   nextLabel,
-  nextType = 'submit',
   nextDisabled,
   nextBusy,
 }: StepActionsProps) {
@@ -93,7 +91,7 @@ export function StepActions({
         <span />
       )}
       <Button
-        type={nextType}
+        type="submit"
         variant="primary"
         iconRight={<ArrowRightIcon />}
         disabled={nextDisabled}

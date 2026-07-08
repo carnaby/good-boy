@@ -17,15 +17,9 @@ describe('StepActions', () => {
     expect(screen.getByRole('button', { name: /späť/i })).toBeDisabled();
   });
 
-  it('defaults the next button to type="submit"', () => {
+  it('always renders the next button as type="submit"', () => {
     renderWithProviders(<StepActions nextLabel="Pokračovať" />);
 
     expect(screen.getByRole('button', { name: 'Pokračovať' })).toHaveAttribute('type', 'submit');
-  });
-
-  it('lets the caller override nextType to "button"', () => {
-    renderWithProviders(<StepActions nextLabel="Ďalej" nextType="button" />);
-
-    expect(screen.getByRole('button', { name: 'Ďalej' })).toHaveAttribute('type', 'button');
   });
 });
