@@ -1,11 +1,18 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { AboutContent } from '@/features/about/AboutContent';
+import { DEFAULT_OG_IMAGE } from '@/lib/metadata';
 
 export const metadata: Metadata = {
   title: 'O projekte – Good Boy',
   description:
     'Zistite viac o nadácii Good Boy, jej poslaní a aktuálnych výsledkoch zbierky pre opustené a týrané psy v Žiline.',
+  openGraph: {
+    title: 'O projekte – Good Boy',
+    description:
+      'Zistite viac o nadácii Good Boy, jej poslaní a aktuálnych výsledkoch zbierky pre opustené a týrané psy v Žiline.',
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 // `AboutContent` calls `useSearchParams()` (to read `?stav=dakujeme`), which
