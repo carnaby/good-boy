@@ -8,10 +8,27 @@ export interface SummaryRow {
   value: string;
 }
 
+export interface SummarySubgroup {
+  /**
+   * Rendered above this subgroup's own rows — e.g. "Darca 2" above a second
+   * donor's rows within the personal-details group. Omit for a subgroup
+   * with no heading of its own (the single-donor case: one subgroup, no
+   * heading, renders identically to a plain flat row list).
+   */
+  heading?: string;
+  rows: SummaryRow[];
+}
+
 export interface SummaryGroup {
   /** Rendered top-left of the group header; omit for a group with no heading of its own. */
   title?: string;
-  rows: SummaryRow[];
+  /**
+   * One or more row lists under a single edit link. Multiple subgroups
+   * (each with its own `heading`) are how the personal-details group lists
+   * several donors while still exposing just the one "Upraviť osobné údaje"
+   * link for the whole group.
+   */
+  subgroups: SummarySubgroup[];
   editHref: string;
   editLabel: string;
   editAriaLabel: string;
@@ -82,6 +99,21 @@ const EditLink = styled(Link)`
   }
 `;
 
+const Subgroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing(2)};
+  width: 100%;
+`;
+
+const SubgroupHeading = styled.h3`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.bodySemibold.fontSize};
+  line-height: ${({ theme }) => theme.typography.bodySemibold.lineHeight};
+  font-weight: ${({ theme }) => theme.typography.bodySemibold.fontWeight};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
 const Dl = styled.dl`
   margin: 0;
   display: flex;
@@ -147,14 +179,19 @@ export function SummaryList({ groups }: SummaryListProps) {
               {group.editLabel}
             </EditLink>
           </GroupHeader>
-          <Dl>
-            {group.rows.map((row) => (
-              <Row key={row.label}>
-                <Label>{row.label}</Label>
-                <Value>{row.value}</Value>
-              </Row>
-            ))}
-          </Dl>
+          {group.subgroups.map((subgroup, index) => (
+            <Subgroup key={subgroup.heading ?? index}>
+              {subgroup.heading ? <SubgroupHeading>{subgroup.heading}</SubgroupHeading> : null}
+              <Dl>
+                {subgroup.rows.map((row) => (
+                  <Row key={row.label}>
+                    <Label>{row.label}</Label>
+                    <Value>{row.value}</Value>
+                  </Row>
+                ))}
+              </Dl>
+            </Subgroup>
+          ))}
         </Group>
       ))}
     </List>

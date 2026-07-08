@@ -6,11 +6,15 @@ const baseDraft: DonationDraft = {
   helpType: 'shelter',
   shelterId: 3,
   amount: 50,
-  firstName: '  Ján  ',
-  lastName: '  Novák  ',
-  email: '  a@b.sk  ',
-  phonePrefix: '+421',
-  phoneNumber: '902 237 207',
+  contributors: [
+    {
+      firstName: '  Ján  ',
+      lastName: '  Novák  ',
+      email: '  a@b.sk  ',
+      phonePrefix: '+421',
+      phoneNumber: '902 237 207',
+    },
+  ],
   consent: true,
 };
 
@@ -57,8 +61,42 @@ describe('toContributeRequest', () => {
   });
 
   it('builds the phone number from prefix + normalized national number', () => {
-    const draft: DonationDraft = { ...baseDraft, phonePrefix: '+420', phoneNumber: '902 237 207' };
+    const draft: DonationDraft = {
+      ...baseDraft,
+      contributors: [{ ...baseDraft.contributors[0], phonePrefix: '+420', phoneNumber: '902 237 207' }],
+    };
 
     expect(toContributeRequest(draft).contributors[0]?.phone).toBe('+420902237207');
+  });
+
+  it('maps every contributor in a multi-donor draft, in order', () => {
+    const draft: DonationDraft = {
+      ...baseDraft,
+      contributors: [
+        {
+          firstName: '  Ján  ',
+          lastName: '  Novák  ',
+          email: '  a@b.sk  ',
+          phonePrefix: '+421',
+          phoneNumber: '902 237 207',
+        },
+        {
+          firstName: '  Jana  ',
+          lastName: '  Nováková  ',
+          email: '  jana@b.sk  ',
+          phonePrefix: '+420',
+          phoneNumber: '777 123 456',
+        },
+      ],
+    };
+
+    expect(toContributeRequest(draft)).toEqual({
+      contributors: [
+        { firstName: 'Ján', lastName: 'Novák', email: 'a@b.sk', phone: '+421902237207' },
+        { firstName: 'Jana', lastName: 'Nováková', email: 'jana@b.sk', phone: '+420777123456' },
+      ],
+      shelterID: 3,
+      value: 50,
+    });
   });
 });

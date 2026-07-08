@@ -20,14 +20,12 @@ export function toContributeRequest(draft: DonationDraft): ContributeRequest {
   }
 
   return {
-    contributors: [
-      {
-        firstName: draft.firstName.trim(),
-        lastName: draft.lastName.trim(),
-        email: draft.email.trim(),
-        phone: `${draft.phonePrefix}${normalizePhone(draft.phoneNumber)}`,
-      },
-    ],
+    contributors: draft.contributors.map((contributor) => ({
+      firstName: contributor.firstName.trim(),
+      lastName: contributor.lastName.trim(),
+      email: contributor.email.trim(),
+      phone: `${contributor.phonePrefix}${normalizePhone(contributor.phoneNumber)}`,
+    })),
     shelterID: draft.shelterId,
     value: draft.amount,
   };

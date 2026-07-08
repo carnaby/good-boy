@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { stepConsentSchema, stepPersonalSchema } from './schemas';
 
-// A fully valid personal-details object. Individual tests override just the
-// field(s) under test so every case still exercises the whole object schema
-// (needed since phone validation depends on the sibling `phonePrefix`).
-const validPersonal = {
+// A fully valid single donor. Individual tests override just the field(s)
+// under test so every case still exercises the whole object schema (needed
+// since phone validation depends on the sibling `phonePrefix`).
+const validContributor = {
   firstName: 'Ján',
   lastName: 'Novák',
   email: 'a@b.sk',
@@ -12,7 +12,11 @@ const validPersonal = {
   phoneNumber: '902237207',
 };
 
-function findIssue(result: ReturnType<typeof stepPersonalSchema.safeParse>, path: string[]) {
+function parseContributors(contributors: unknown[]) {
+  return stepPersonalSchema.safeParse({ contributors });
+}
+
+function findIssue(result: ReturnType<typeof parseContributors>, path: (string | number)[]) {
   if (result.success) return undefined;
   return result.error.issues.find((i) => i.path.join('.') === path.join('.'));
 }
@@ -31,13 +35,13 @@ describe('stepPersonalSchema', () => {
       { name: 'padded short name is trimmed then passes', value: '  Jo  ', valid: true, trimmedTo: 'Jo' },
       { name: 'normal name passes', value: 'Ján', valid: true, trimmedTo: 'Ján' },
     ])('$name', ({ value, valid, message, trimmedTo }) => {
-      const result = stepPersonalSchema.safeParse({ ...validPersonal, firstName: value });
+      const result = parseContributors([{ ...validContributor, firstName: value }]);
 
       expect(result.success).toBe(valid);
       if (!valid) {
-        expect(findIssue(result, ['firstName'])?.message).toBe(message);
+        expect(findIssue(result, ['contributors', 0, 'firstName'])?.message).toBe(message);
       } else if (result.success) {
-        expect(result.data.firstName).toBe(trimmedTo);
+        expect(result.data.contributors[0]?.firstName).toBe(trimmedTo);
       }
     });
   });
@@ -54,11 +58,11 @@ describe('stepPersonalSchema', () => {
       },
       { name: 'normal name passes', value: 'Novák', valid: true },
     ])('$name', ({ value, valid, message }) => {
-      const result = stepPersonalSchema.safeParse({ ...validPersonal, lastName: value });
+      const result = parseContributors([{ ...validContributor, lastName: value }]);
 
       expect(result.success).toBe(valid);
       if (!valid) {
-        expect(findIssue(result, ['lastName'])?.message).toBe(message);
+        expect(findIssue(result, ['contributors', 0, 'lastName'])?.message).toBe(message);
       }
     });
   });
@@ -74,11 +78,11 @@ describe('stepPersonalSchema', () => {
       },
       { name: 'valid email passes', value: 'a@b.sk', valid: true },
     ])('$name', ({ value, valid, message }) => {
-      const result = stepPersonalSchema.safeParse({ ...validPersonal, email: value });
+      const result = parseContributors([{ ...validContributor, email: value }]);
 
       expect(result.success).toBe(valid);
       if (!valid) {
-        expect(findIssue(result, ['email'])?.message).toBe(message);
+        expect(findIssue(result, ['contributors', 0, 'email'])?.message).toBe(message);
       }
     });
   });
@@ -135,14 +139,50 @@ describe('stepPersonalSchema', () => {
         message: 'validation.phoneRequired',
       },
     ])('$name', ({ phonePrefix, phoneNumber, valid, message, normalizedTo }) => {
-      const result = stepPersonalSchema.safeParse({ ...validPersonal, phonePrefix, phoneNumber });
+      const result = parseContributors([{ ...validContributor, phonePrefix, phoneNumber }]);
 
       expect(result.success).toBe(valid);
       if (!valid) {
-        expect(findIssue(result, ['phoneNumber'])?.message).toBe(message);
+        expect(findIssue(result, ['contributors', 0, 'phoneNumber'])?.message).toBe(message);
       } else if (result.success) {
-        expect(result.data.phoneNumber).toBe(normalizedTo);
+        expect(result.data.contributors[0]?.phoneNumber).toBe(normalizedTo);
       }
+    });
+  });
+
+  describe('contributors array', () => {
+    it('fails when the array is empty', () => {
+      const result = parseContributors([]);
+
+      expect(result.success).toBe(false);
+    });
+
+    it('passes with 2 valid donors', () => {
+      const result = parseContributors([validContributor, { ...validContributor, firstName: 'Jana' }]);
+
+      expect(result.success).toBe(true);
+    });
+
+    it('fails at contributors.1.email when the second donor has an invalid email', () => {
+      const result = parseContributors([validContributor, { ...validContributor, email: 'not-an-email' }]);
+
+      expect(result.success).toBe(false);
+      const issue = findIssue(result, ['contributors', 1, 'email']);
+      expect(issue?.message).toBe('validation.emailInvalid');
+      // The first (valid) donor must not have produced any issue of its own.
+      expect(findIssue(result, ['contributors', 0, 'email'])).toBeUndefined();
+    });
+
+    it('fails when there are more than 10 donors', () => {
+      const result = parseContributors(Array.from({ length: 11 }, () => ({ ...validContributor })));
+
+      expect(result.success).toBe(false);
+    });
+
+    it('passes with exactly 10 donors', () => {
+      const result = parseContributors(Array.from({ length: 10 }, () => ({ ...validContributor })));
+
+      expect(result.success).toBe(true);
     });
   });
 });

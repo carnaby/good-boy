@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { HelpType, PhonePrefix } from './store';
+import { MAX_CONTRIBUTORS, type HelpType, type PhonePrefix } from './store';
 import { PHONE_PREFIXES, normalizePhone } from './phone';
 
 /**
@@ -80,7 +80,14 @@ function requiredTrimmedString(bounds: { min: number; max: number; requiredKey: 
     });
 }
 
-export const stepPersonalSchema = z
+// Single-donor object schema — every rule/message is unchanged from before
+// the multi-donor refactor, only the name changed (was `stepPersonalSchema`
+// itself). Used as `stepPersonalSchema`'s array item below, so each
+// contributor is validated independently; zod prepends the array index to
+// every issue's `path` automatically (e.g. `['contributors', 1, 'email']`),
+// which is exactly the `contributors.1.email`-style path RHF needs to map an
+// error back to the right field of the right donor.
+export const contributorSchema = z
   .object({
     firstName: requiredTrimmedString({
       min: 2,
@@ -130,6 +137,16 @@ export const stepPersonalSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['phoneNumber'], message: 'validation.phoneInvalid' });
     }
   });
+
+export type ContributorValues = z.infer<typeof contributorSchema>;
+
+// Step 2 now holds a list of donors rather than a single one — at least 1
+// (the UI never lets the count drop below that; the first donor's remove
+// button is never rendered) and at most `MAX_CONTRIBUTORS` (the UI disables
+// the "add donor" button once that's reached).
+export const stepPersonalSchema = z.object({
+  contributors: z.array(contributorSchema).min(1).max(MAX_CONTRIBUTORS),
+});
 
 export type StepPersonalValues = z.infer<typeof stepPersonalSchema>;
 

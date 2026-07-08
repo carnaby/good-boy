@@ -73,9 +73,11 @@ const AlertActions = styled.div`
 `;
 
 // joi validation `path`s the API can send back on a 400. Contributor-scoped
-// fields are prefixed with the (single, index-0) contributor's path; the
-// help-selection fields sit directly under `body`.
-const CONTRIBUTOR_PATH_PREFIX = 'body.contributors.0.';
+// fields are prefixed with `body.contributors.<index>.` (ANY donor index —
+// the visible message names only the FIELD, never the donor, so the index
+// is matched but deliberately not surfaced); the help-selection fields sit
+// directly under `body`.
+const CONTRIBUTOR_PATH_REGEX = /^body\.contributors\.\d+\./;
 const HELP_SELECTION_PATHS = new Set(['body.value', 'body.shelterID']);
 
 const CONTRIBUTOR_FIELD_I18N_KEYS: Record<string, string> = {
@@ -105,8 +107,9 @@ function classifyValidationMessages(messages: ApiMessage[]): ValidationClassific
     const path = message.path;
     if (!path) continue;
 
-    if (path.startsWith(CONTRIBUTOR_PATH_PREFIX)) {
-      const suffix = path.slice(CONTRIBUTOR_PATH_PREFIX.length);
+    const contributorMatch = CONTRIBUTOR_PATH_REGEX.exec(path);
+    if (contributorMatch) {
+      const suffix = path.slice(contributorMatch[0].length);
       const key = CONTRIBUTOR_FIELD_I18N_KEYS[suffix];
       if (key && !fieldKeys.includes(key)) fieldKeys.push(key);
     } else if (HELP_SELECTION_PATHS.has(path)) {
@@ -263,27 +266,40 @@ function Step3Form({ draft, shelterName, onBack, onSubmitSucceeded }: Step3FormP
 
   const helpTypeLabel = draft.helpType === 'foundation' ? t('step3.helpTypeFoundation') : t('step3.helpTypeShelter');
 
+  // Single donor: one heading-less subgroup — renders identically to the
+  // pre-multi-donor flat row list. 2+ donors: one subgroup per donor, each
+  // headed by "Darca N", still under the ONE "Upraviť osobné údaje" edit
+  // link for the whole group below.
+  const personalSubgroups: SummaryGroup['subgroups'] = draft.contributors.map((contributor, index) => ({
+    heading: draft.contributors.length > 1 ? t('step2.donorHeading', { number: index + 1 }) : undefined,
+    rows: [
+      { label: t('step3.nameLabel'), value: `${contributor.firstName} ${contributor.lastName}` },
+      { label: t('step3.emailLabel'), value: contributor.email },
+      { label: t('step3.phoneLabel'), value: formatPhone(contributor.phonePrefix, contributor.phoneNumber) },
+    ],
+  }));
+
   const groups: SummaryGroup[] = [
     {
       title: t('step3.summaryTitle'),
       editHref: '/',
       editLabel: t('step3.edit'),
       editAriaLabel: t('step3.editHelpAria'),
-      rows: [
-        { label: t('step3.helpTypeLabel'), value: helpTypeLabel },
-        ...(draft.shelterId !== null ? [{ label: t('step3.shelterLabel'), value: shelterName }] : []),
-        { label: t('step3.amountLabel'), value: draft.amount !== null ? formatAmount(draft.amount) : '' },
+      subgroups: [
+        {
+          rows: [
+            { label: t('step3.helpTypeLabel'), value: helpTypeLabel },
+            ...(draft.shelterId !== null ? [{ label: t('step3.shelterLabel'), value: shelterName }] : []),
+            { label: t('step3.amountLabel'), value: draft.amount !== null ? formatAmount(draft.amount) : '' },
+          ],
+        },
       ],
     },
     {
       editHref: '/osobne-udaje',
       editLabel: t('step3.edit'),
       editAriaLabel: t('step3.editPersonalAria'),
-      rows: [
-        { label: t('step3.nameLabel'), value: `${draft.firstName} ${draft.lastName}` },
-        { label: t('step3.emailLabel'), value: draft.email },
-        { label: t('step3.phoneLabel'), value: formatPhone(draft.phonePrefix, draft.phoneNumber) },
-      ],
+      subgroups: personalSubgroups,
     },
   ];
 
@@ -338,11 +354,7 @@ export function Step3() {
   const helpType = useDonationStore((state) => state.helpType);
   const shelterId = useDonationStore((state) => state.shelterId);
   const amount = useDonationStore((state) => state.amount);
-  const firstName = useDonationStore((state) => state.firstName);
-  const lastName = useDonationStore((state) => state.lastName);
-  const email = useDonationStore((state) => state.email);
-  const phonePrefix = useDonationStore((state) => state.phonePrefix);
-  const phoneNumber = useDonationStore((state) => state.phoneNumber);
+  const contributors = useDonationStore((state) => state.contributors);
   const consent = useDonationStore((state) => state.consent);
   const { data: shelters } = useShelters();
 
@@ -369,7 +381,7 @@ export function Step3() {
       <StepHeading>{t('step3.heading')}</StepHeading>
       {canRenderForm ? (
         <Step3Form
-          draft={{ helpType, shelterId, amount, firstName, lastName, email, phonePrefix, phoneNumber, consent }}
+          draft={{ helpType, shelterId, amount, contributors, consent }}
           shelterName={shelterName}
           onBack={() => router.push('/osobne-udaje')}
           onSubmitSucceeded={() => setSubmitSucceeded(true)}

@@ -31,7 +31,11 @@
     "emailPlaceholder": "Zadajte Váš e-mail",
     "phoneLabel": "Telefónne číslo",
     "phonePlaceholder": "123 321 123",
-    "phoneNumberAriaLabel": "Telefónne číslo bez predvoľby"
+    "phoneNumberAriaLabel": "Telefónne číslo bez predvoľby",
+    "addDonor": "Pridať ďalšieho darcu",
+    "removeDonor": "Odstrániť",
+    "removeDonorAria": "Odstrániť darcu {{number}}",
+    "donorHeading": "Darca {{number}}"
   },
   "step3": {
     "heading": "Skontrolujte si zadané údaje",

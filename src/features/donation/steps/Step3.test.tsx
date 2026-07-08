@@ -37,11 +37,15 @@ function seedFullDraft(overrides: Partial<ReturnType<typeof useDonationStore.get
     helpType: 'shelter',
     shelterId: 1,
     amount: 50,
-    firstName: 'Peter',
-    lastName: 'Reguli',
-    email: 'peter.reguli@goodrequest.com',
-    phonePrefix: '+421',
-    phoneNumber: '902237207',
+    contributors: [
+      {
+        firstName: 'Peter',
+        lastName: 'Reguli',
+        email: 'peter.reguli@example.com',
+        phonePrefix: '+421',
+        phoneNumber: '902237207',
+      },
+    ],
     ...overrides,
   });
 }
@@ -63,8 +67,11 @@ describe('Step3', () => {
     expect(await screen.findByText('Shelter One')).toBeInTheDocument();
     expect(screen.getByText(/^50\s€$/)).toBeInTheDocument();
     expect(screen.getByText('Peter Reguli')).toBeInTheDocument();
-    expect(screen.getByText('peter.reguli@goodrequest.com')).toBeInTheDocument();
+    expect(screen.getByText('peter.reguli@example.com')).toBeInTheDocument();
     expect(screen.getByText('+421 902 237 207')).toBeInTheDocument();
+    // Regression: a single donor renders with NO "Darca N" heading at all —
+    // multi-donor sub-headings must only appear once there's more than one.
+    expect(screen.queryByText(/^Darca /)).not.toBeInTheDocument();
   });
 
   it('shows an em dash for the shelter name when the shelters query fails, never a blank value', async () => {
@@ -306,5 +313,116 @@ describe('Step3', () => {
     // Regression (same as the direct success test): the post-success store
     // reset must never re-arm Step3's guard redirect.
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  describe('multiple donors', () => {
+    function seedTwoDonorDraft(overrides: Partial<ReturnType<typeof useDonationStore.getState>> = {}) {
+      seedFullDraft({
+        contributors: [
+          {
+            firstName: 'Peter',
+            lastName: 'Reguli',
+            email: 'peter.reguli@example.com',
+            phonePrefix: '+421',
+            phoneNumber: '902237207',
+          },
+          {
+            firstName: 'Jana',
+            lastName: 'Nováková',
+            email: 'jana@example.com',
+            phonePrefix: '+420',
+            phoneNumber: '777123456',
+          },
+        ],
+        ...overrides,
+      });
+    }
+
+    it('shows both donors under "Darca 1"/"Darca 2" sub-headings, with one edit link for the whole group', async () => {
+      seedTwoDonorDraft();
+      renderWithProviders(<Step3 />);
+      await screen.findByText('Shelter One');
+
+      expect(screen.getByText('Darca 1')).toBeInTheDocument();
+      expect(screen.getByText('Darca 2')).toBeInTheDocument();
+      expect(screen.getByText('Peter Reguli')).toBeInTheDocument();
+      expect(screen.getByText('peter.reguli@example.com')).toBeInTheDocument();
+      expect(screen.getByText('+421 902 237 207')).toBeInTheDocument();
+      expect(screen.getByText('Jana Nováková')).toBeInTheDocument();
+      expect(screen.getByText('jana@example.com')).toBeInTheDocument();
+      expect(screen.getByText('+420 777 123 456')).toBeInTheDocument();
+
+      // Still just ONE "Upraviť" pair (help+amount, personal) even with 2
+      // donors listed under the personal group.
+      expect(screen.getAllByText('Upraviť')).toHaveLength(2);
+      expect(screen.getByRole('link', { name: 'Upraviť osobné údaje' })).toHaveAttribute('href', '/osobne-udaje');
+    });
+
+    it('submits successfully with 2 donors: POST body matches toContributeRequest exactly (both contributors)', async () => {
+      seedTwoDonorDraft();
+      let capturedBody: unknown;
+      server.use(
+        http.post('*/api/v1/shelters/contribute', async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({ messages: defaultContributeMessages });
+        })
+      );
+      const draftAtSubmitTime = useDonationStore.getState();
+      const user = userEvent.setup();
+      renderWithProviders(<Step3 />);
+      await screen.findByText('Shelter One');
+
+      await user.click(screen.getByLabelText('Súhlasím so spracovaním mojich osobných údajov'));
+      await user.click(screen.getByRole('button', { name: 'Odoslať formulár' }));
+
+      await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/o-projekte?stav=dakujeme'));
+      const expectedBody = toContributeRequest(draftAtSubmitTime);
+      expect(expectedBody.contributors).toHaveLength(2);
+      expect(capturedBody).toEqual(expectedBody);
+      expect(capturedBody).toEqual({
+        contributors: [
+          { firstName: 'Peter', lastName: 'Reguli', email: 'peter.reguli@example.com', phone: '+421902237207' },
+          { firstName: 'Jana', lastName: 'Nováková', email: 'jana@example.com', phone: '+420777123456' },
+        ],
+        shelterID: 1,
+        value: 50,
+      } satisfies ContributeRequest);
+      expect(useDonationStore.getState()).toMatchObject({ ...initialDraft, completedStep: 0 });
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('400 validation naming contributors.1.email (second donor): field named + link to step 2, same as index 0', async () => {
+      seedTwoDonorDraft();
+      server.use(
+        http.post('*/api/v1/shelters/contribute', () =>
+          HttpResponse.json(
+            {
+              messages: [
+                { type: 'ERROR', message: 'joi.body.contributors.1.email', path: 'body.contributors.1.email' },
+              ],
+            },
+            { status: 400 }
+          )
+        )
+      );
+      const user = userEvent.setup();
+      renderWithProviders(<Step3 />);
+      await screen.findByText('Shelter One');
+
+      await user.click(screen.getByLabelText('Súhlasím so spracovaním mojich osobných údajov'));
+      await user.click(screen.getByRole('button', { name: 'Odoslať formulár' }));
+
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent('Server odmietol odoslané údaje. Skontrolujte ich, prosím, a skúste to znova.');
+      expect(alert).toHaveTextContent('e-mail');
+      // Scoped to the alert: the step-3 summary above it also has an
+      // "Upraviť osobné údaje"-named edit link pointing at the same href.
+      expect(within(alert).getByRole('link', { name: 'Upraviť osobné údaje' })).toHaveAttribute(
+        'href',
+        '/osobne-udaje'
+      );
+      expect(screen.queryByRole('button', { name: 'Skúsiť znova' })).not.toBeInTheDocument();
+      expect(mockPush).not.toHaveBeenCalled();
+    });
   });
 });
