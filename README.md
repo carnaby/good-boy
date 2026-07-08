@@ -98,8 +98,10 @@ logic in the components themselves. Two details matter beyond the basic shape ch
   the valid national-number length is looked up per selected prefix from a single data table
   (`src/features/donation/phone.ts`), so adding a country with a different length is a one-line data change,
   not a validation rewrite.
-- The API requires a non-empty first name for each contributor, so the form marks the field as required
-  (2–20 characters).
+- The API requires a non-empty first name for each contributor — a submission with an empty or missing
+  `firstName` is rejected with a 400 validation error (verified against the live endpoint) — so the form
+  marks the field as required (2–20 characters) rather than shipping a flow that can only fail at
+  submit time.
 
 ### styled-components with the App Router SSR registry
 
@@ -166,7 +168,7 @@ tree — this keeps a component and its test moving together under a rename or a
 
 ## Testing
 
-171 tests across 25 files, run with Vitest + Testing Library + MSW (`jsdom` environment).
+190 tests across 25 files, run with Vitest + Testing Library + MSW (`jsdom` environment).
 
 - **Unit-level TDD** for the parts with the most edge cases and the least visual surface: Zod schemas
   (`schemas.step1.test.ts`, `schemas.step2.test.ts`), the Zustand store (`store.test.ts`), the donation
