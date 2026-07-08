@@ -243,6 +243,32 @@ describe('Step3', () => {
     expect(postCount).toBe(2);
   });
 
+  it('a 200 response with an unexpected body (contract drift) presents as a server error with retry, without crashing, resetting the store, or redirecting', async () => {
+    seedFullDraft();
+    // `apiFetch` parses every 2xx body through `contributeResponseSchema`; a
+    // body that doesn't match (no `messages` array) makes it throw the
+    // schema's own ZodError instead of an `ApiError` — deliberately, per the
+    // contract note in `src/features/api/client.ts`. `ErrorPanel` must not
+    // crash reaching for `.kind`/`.messages` on that ZodError.
+    server.use(http.post('*/api/v1/shelters/contribute', () => HttpResponse.json({ nonsense: true })));
+    const user = userEvent.setup();
+    renderWithProviders(<Step3 />);
+    await screen.findByText('Shelter One');
+
+    await user.click(screen.getByLabelText('Súhlasím so spracovaním mojich osobných údajov'));
+    await user.click(screen.getByRole('button', { name: 'Odoslať formulár' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Na serveri nastala chyba. Skúste to znova o chvíľu.');
+    expect(screen.getByRole('button', { name: 'Skúsiť znova' })).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+    // Regression: a crash or an unintended store reset here would also wipe
+    // out completedStep, re-arming the "not far enough into the wizard"
+    // guard — asserting it's untouched doubles as the "didn't crash" check.
+    expect(useDonationStore.getState().completedStep).toBe(2);
+  });
+
   it('network error shows the network message with a retry button', async () => {
     seedFullDraft();
     server.use(http.post('*/api/v1/shelters/contribute', () => HttpResponse.error()));

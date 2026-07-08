@@ -129,6 +129,12 @@ const MetricSkeleton = styled.div`
   background: ${({ theme }) => theme.colors.surface};
 `;
 
+// Punctuation, not copy (same convention as Step3's shelter-name fallback) —
+// shown instead of the zero-fallback numbers on a failed `useResults`, since
+// "0 €" / "0" would otherwise read as "nobody has donated" rather than "we
+// don't know right now".
+const METRIC_ERROR_FALLBACK = '—';
+
 /**
  * `/o-projekte` — static intro/outro copy (verbatim from Figma) around a
  * live metrics band (`useResults`, already polled every 15s by the hook
@@ -142,7 +148,7 @@ export function AboutContent() {
   const { t: tCommon } = useTranslation('common');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data, isLoading } = useResults();
+  const { data, isLoading, isError } = useResults();
 
   // Captured once, at mount — NOT re-derived on every render off
   // `searchParams`, so the toast stays visible even after the `replace`
@@ -175,7 +181,9 @@ export function AboutContent() {
           {isLoading ? (
             <MetricSkeleton aria-hidden="true" />
           ) : (
-            <MetricValue>{formatCollected(data?.contribution ?? null)}</MetricValue>
+            <MetricValue>
+              {isError ? METRIC_ERROR_FALLBACK : formatCollected(data?.contribution ?? null)}
+            </MetricValue>
           )}
           <MetricLabel>{t('metrics.collectedLabel')}</MetricLabel>
         </MetricItem>
@@ -183,7 +191,9 @@ export function AboutContent() {
           {isLoading ? (
             <MetricSkeleton aria-hidden="true" />
           ) : (
-            <MetricValue>{formatContributors(data?.contributors ?? 0)}</MetricValue>
+            <MetricValue>
+              {isError ? METRIC_ERROR_FALLBACK : formatContributors(data?.contributors ?? 0)}
+            </MetricValue>
           )}
           <MetricLabel>{t('metrics.contributorsLabel')}</MetricLabel>
         </MetricItem>

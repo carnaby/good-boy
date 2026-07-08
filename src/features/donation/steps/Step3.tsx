@@ -145,7 +145,17 @@ function formatPhone(prefix: string, number: string): string {
 const SHELTER_NAME_FALLBACK = '—';
 
 interface ErrorPanelProps {
-  error: ApiError;
+  // `unknown`, not `ApiError`: `mutation.error` is typed as `ApiError` by
+  // `useContribute`, but that's a lie the type system can't catch — a 200
+  // response with a body that doesn't match `contributeResponseSchema` makes
+  // `apiFetch` throw the schema's own `ZodError` instead (see the contract
+  // note on `apiFetch` in `src/features/api/client.ts`), and that ZodError
+  // reaches this component as `mutation.error` just the same. Typing `error`
+  // as `unknown` and narrowing with `instanceof ApiError` below means that
+  // contract-drift ZodError can never crash this render by reaching for
+  // `.kind`/`.messages` off a shape it doesn't have — it just falls into the
+  // same "server" branch as a real 5xx, generic message and a retry button.
+  error: unknown;
   onRetry: () => void;
 }
 
@@ -161,10 +171,14 @@ function ErrorPanel({ error, onRetry }: ErrorPanelProps) {
   const { t } = useTranslation('donation');
   const { t: tCommon } = useTranslation('common');
 
-  if (error.kind === 'network' || error.kind === 'server') {
+  const apiError = error instanceof ApiError ? error : null;
+  // Anything that isn't an `ApiError` (the contract-drift ZodError case above)
+  // is presented exactly like a `'server'` `ApiError` would be.
+  if (!apiError || apiError.kind === 'network' || apiError.kind === 'server') {
+    const kindKey = apiError?.kind === 'network' ? 'network' : 'server';
     return (
       <AlertBox role="alert">
-        <AlertText>{t(`step3.errors.${error.kind}`)}</AlertText>
+        <AlertText>{t(`step3.errors.${kindKey}`)}</AlertText>
         <AlertActions>
           <Button type="button" variant="secondary" onClick={onRetry}>
             {tCommon('actions.retry')}
@@ -174,7 +188,7 @@ function ErrorPanel({ error, onRetry }: ErrorPanelProps) {
     );
   }
 
-  const { fieldKeys, hasHelpSelectionError } = classifyValidationMessages(error.messages);
+  const { fieldKeys, hasHelpSelectionError } = classifyValidationMessages(apiError.messages);
 
   return (
     <AlertBox role="alert">

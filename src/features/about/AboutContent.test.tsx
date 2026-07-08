@@ -72,6 +72,18 @@ describe('AboutContent', () => {
     expect(await screen.findByText(/^0\s€$/)).toBeInTheDocument();
   });
 
+  it('shows an em dash for both metrics (never the misleading 0-fallback) when the results query errors, labels still render', async () => {
+    server.use(http.get('*/api/v1/shelters/results', () => new HttpResponse(null, { status: 500 })));
+    renderWithProviders(<AboutContent />);
+
+    // Same retry-backoff rationale as Step3's shelters-failure test: the
+    // QueryClient (src/lib/providers.tsx) retries once before settling into
+    // the error state, well past the default `findBy*` timeout.
+    expect(await screen.findAllByText('—', {}, { timeout: 3000 })).toHaveLength(2);
+    expect(screen.getByText('Celková vyzbieraná hodnota')).toBeInTheDocument();
+    expect(screen.getByText('Počet darcov')).toBeInTheDocument();
+  });
+
   it('shows skeleton placeholders + a hidden loading announcement while useResults is still loading', async () => {
     server.use(
       http.get('*/api/v1/shelters/results', async () => {
