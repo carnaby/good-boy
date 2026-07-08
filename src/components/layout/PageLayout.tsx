@@ -30,14 +30,22 @@ const Container = styled.div`
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  /* Bottom padding is deliberately larger so content never sits flush
-     against the footer. */
-  padding: ${({ theme }) => theme.spacing(10)} ${({ theme }) => theme.spacing(4)}
-    ${({ theme }) => theme.spacing(16)};
+  padding: ${({ theme }) => theme.spacing(10)} ${({ theme }) => theme.spacing(4)};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    padding: ${({ theme }) => theme.spacing(15)} ${({ theme }) => theme.spacing(20)}
-      ${({ theme }) => theme.spacing(24)};
+    padding: ${({ theme }) => theme.spacing(15)} ${({ theme }) => theme.spacing(20)};
+  }
+`;
+
+// The footer renders INSIDE `Container` (it must stay a sibling of `<main>`
+// for its `contentinfo` role), so the breathing room between the page text
+// and the footer has to live here — bottom padding on `Container` would land
+// BELOW the footer instead.
+const FooterSlot = styled.div`
+  margin-top: ${({ theme }) => theme.spacing(16)};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    margin-top: ${({ theme }) => theme.spacing(24)};
   }
 `;
 
@@ -66,7 +74,7 @@ export function PageLayout({ children, footer }: PageLayoutProps) {
       <Main id="main-content" tabIndex={-1}>
         {children}
       </Main>
-      {footer}
+      {footer ? <FooterSlot>{footer}</FooterSlot> : null}
     </Container>
   );
 }
