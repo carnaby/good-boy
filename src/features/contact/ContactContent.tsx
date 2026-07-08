@@ -212,7 +212,7 @@ export function ContactContent() {
   ];
 
   return (
-    <PageLayout>
+    <PageLayout footer={<SiteFooter />}>
       <BackLink href="/">
         <ArrowLeftIcon />
         {tCommon('actions.back')}
@@ -233,7 +233,6 @@ export function ContactContent() {
       <PhotoBand>
         <Image src="/images/dog-kontakt.jpg" alt="" fill sizes="100vw" style={{ objectFit: 'cover' }} />
       </PhotoBand>
-      <SiteFooter />
     </PageLayout>
   );
 }

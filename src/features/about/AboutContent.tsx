@@ -75,16 +75,23 @@ const Paragraph = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
+// Stacked below \`md\` (the 60px metric numerals need their own line on a
+// phone), side by side from \`md\` up.
 const MetricsBand = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
   gap: ${({ theme }) => theme.spacing(10)};
   width: 100%;
   margin: ${({ theme }) => theme.spacing(10)} 0;
   padding: ${({ theme }) => theme.spacing(10)} 0;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
 `;
 
 const MetricItem = styled.div`
@@ -150,7 +157,7 @@ export function AboutContent() {
   }, [showToast, router]);
 
   return (
-    <PageLayout>
+    <PageLayout footer={<SiteFooter />}>
       <BackLink href="/">
         <ArrowLeftIcon />
         {tCommon('actions.back')}
@@ -158,7 +165,10 @@ export function AboutContent() {
       <Heading>{t('heading')}</Heading>
       <Paragraph>{t('intro')}</Paragraph>
       <MetricsBand>
-        {isLoading ? <VisuallyHidden>{t('metrics.loading')}</VisuallyHidden> : null}
+        {/* `role="status"` (implicit `aria-live="polite"` + `aria-atomic`) so
+            screen readers announce the loading state instead of silently
+            swapping to the skeletons. */}
+        {isLoading ? <VisuallyHidden role="status">{t('metrics.loading')}</VisuallyHidden> : null}
         <MetricItem>
           {isLoading ? (
             <MetricSkeleton aria-hidden="true" />
@@ -177,7 +187,6 @@ export function AboutContent() {
         </MetricItem>
       </MetricsBand>
       <Paragraph>{t('outro')}</Paragraph>
-      <SiteFooter />
       {showToast ? <Toast message={t('toast.success')} onClose={() => setShowToast(false)} /> : null}
     </PageLayout>
   );

@@ -15,11 +15,29 @@ export interface StepActionsProps {
   nextBusy?: boolean;
 }
 
+// Stacked + full-width below \`md\` (own judgment call — two 56px-tall
+// buttons side by side get uncomfortably narrow at 375px; DOM order (Späť
+// above Pokračovať) is kept as the visual order too, so tab order and
+// reading order never disagree). Side by side, intrinsic width, from \`md\` up.
 const Row = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing(4)};
   width: 100%;
+
+  & > * {
+    width: 100%;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    & > * {
+      width: auto;
+    }
+  }
 `;
 
 function ArrowLeftIcon() {

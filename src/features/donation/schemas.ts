@@ -12,8 +12,12 @@ import { PHONE_PREFIXES, normalizePhone } from './phone';
  * checkbox all live here.
  */
 
-// Reuses `HelpType` from the store (rather than redeclaring the literals) so
-// the two stay in sync — `satisfies` fails to compile if they ever diverge.
+// Reuses `HelpType` from the store (rather than redeclaring the literals).
+// `satisfies` only requires every literal listed here to still be assignable
+// to `HelpType` — it catches a variant being REMOVED or RENAMED in the store
+// (this list would no longer compile), but NOT a new variant being ADDED
+// there (TS has no way to require this list to be exhaustive, so it would
+// silently stay incomplete).
 const helpTypeValues = ['shelter', 'foundation'] as const satisfies readonly HelpType[];
 
 // `amount` is `.nullable()` (with its "required" check living in the
@@ -45,8 +49,9 @@ export const stepHelpSchema = z
 
 export type StepHelpValues = z.infer<typeof stepHelpSchema>;
 
-// Same `satisfies` device as `helpTypeValues` above, keeping the enum in
-// sync with the store's `PhonePrefix` union.
+// Same `satisfies` device as `helpTypeValues` above — guards against a
+// `PhonePrefix` variant being removed or renamed, not against a new one
+// being added (see that comment for why).
 const phonePrefixValues = ['+421', '+420'] as const satisfies readonly PhonePrefix[];
 
 // Digits-only national number, no leading zero. The overall length (per

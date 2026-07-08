@@ -34,6 +34,18 @@ export function fieldA11yProps(id: string, error?: string) {
   };
 }
 
+/**
+ * Id of this field's `<label>` element (see `Label` below). Exposed so a
+ * `children` implementation that can't rely on native `<label for>`
+ * association in one of its states — e.g. `ShelterSelect` swapping its
+ * `<select>` for a non-labelable retry `role="group"` when the shelters
+ * request fails — can still point an `aria-labelledby` at the real label
+ * instead of going unlabelled.
+ */
+export function fieldLabelId(id: string): string {
+  return `${id}-label`;
+}
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -49,8 +61,12 @@ const Label = styled.label`
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
+// `textTertiary`, not `textMuted` — this renders real, always-visible
+// instructional text ("(Nepovinné)"), not a placeholder/decorative hint, and
+// `textMuted` (#9CA3AF, ~2.5:1 on white) fails WCAG AA's 4.5:1 text
+// contrast; `textTertiary` (~7.5:1) passes comfortably.
 const OptionalHint = styled.span`
-  color: ${({ theme }) => theme.colors.textMuted};
+  color: ${({ theme }) => theme.colors.textTertiary};
 `;
 
 const ErrorText = styled.p`
@@ -63,7 +79,7 @@ const ErrorText = styled.p`
 export function FormField({ id, label, error, optionalHint, children }: FormFieldProps) {
   return (
     <Wrapper>
-      <Label htmlFor={id}>
+      <Label id={fieldLabelId(id)} htmlFor={id}>
         {label}
         {optionalHint ? <>{' '}<OptionalHint>({optionalHint})</OptionalHint></> : null}
       </Label>

@@ -10,11 +10,20 @@ import { AboutContent } from './AboutContent';
  * Same `next/navigation` mocking pattern as the donation steps' tests
  * (`useRouter`), plus a controllable `useSearchParams` so each test can
  * decide whether `?stav=dakujeme` is present.
+ *
+ * `mockRouter` is a single object built once at module scope (not a fresh
+ * object literal returned per call) so `useRouter()` is referentially STABLE
+ * across re-renders, same as the real Next.js hook — `AboutContent`'s
+ * `useEffect(() => { if (showToast) router.replace(...) }, [showToast, router])`
+ * relies on that stability to only fire once per `showToast` transition; an
+ * unstable mock would re-run it (and double-call `replace`) on every
+ * unrelated re-render (e.g. `useResults()` settling).
  */
 const mockReplace = vi.fn();
+const mockRouter = { replace: mockReplace, push: vi.fn(), prefetch: vi.fn() };
 let mockSearchParams = new URLSearchParams();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mockReplace, push: vi.fn(), prefetch: vi.fn() }),
+  useRouter: () => mockRouter,
   useSearchParams: () => mockSearchParams,
 }));
 
@@ -72,7 +81,10 @@ describe('AboutContent', () => {
     );
     const { container } = renderWithProviders(<AboutContent />);
 
-    expect(screen.getByText('Načítavam…')).toBeInTheDocument();
+    // `role="status"` carries an implicit `aria-live="polite"` so screen
+    // readers announce the loading state instead of silently jumping to the
+    // resolved metrics.
+    expect(screen.getByRole('status')).toHaveTextContent('Načítavam…');
     // Skeleton placeholders: `aria-hidden` `div`s (as opposed to the
     // likewise-`aria-hidden` decorative icon `svg`s elsewhere on the page).
     expect(container.querySelectorAll('div[aria-hidden="true"]')).toHaveLength(2);
@@ -81,6 +93,7 @@ describe('AboutContent', () => {
     await waitFor(() => expect(screen.getByText(/^2,5\s€$/)).toBeInTheDocument());
     expect(screen.queryByText('Načítavam…')).not.toBeInTheDocument();
     expect(container.querySelectorAll('div[aria-hidden="true"]')).toHaveLength(0);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('?stav=dakujeme shows the success toast and cleans the URL via router.replace; closing hides it', async () => {
@@ -97,10 +110,13 @@ describe('AboutContent', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
-  it('shows no toast and never calls replace when there is no "stav" param', () => {
+  it('shows no toast and never calls replace when there is no "stav" param', async () => {
     renderWithProviders(<AboutContent />);
 
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    // The metrics-loading announcement is ALSO `role="status"` — wait for
+    // that transient one to clear so this only asserts on the toast (there
+    // shouldn't be one, with or without a still-loading metrics band).
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
     expect(mockReplace).not.toHaveBeenCalled();
   });
 });

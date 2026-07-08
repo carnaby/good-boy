@@ -34,10 +34,16 @@ const Socials = styled.div`
   gap: ${({ theme }) => theme.spacing(4)};
 `;
 
+// Icon is 16x16, but the tappable box is padded out to 48x48 (≥44px target
+// size) — an equal negative margin cancels the padding's footprint so the
+// footer's visual layout (gaps between Logo/socials/nav) is unchanged, only
+// the actual hit area grows.
 const SocialLink = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: ${({ theme }) => theme.spacing(4)};
+  margin: -${({ theme }) => theme.spacing(4)};
   color: ${({ theme }) => theme.colors.textTertiary};
 
   svg {

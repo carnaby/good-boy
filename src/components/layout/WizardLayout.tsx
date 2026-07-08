@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { SiteFooter } from './SiteFooter';
@@ -44,11 +44,32 @@ const Content = styled.div`
   }
 `;
 
-const Main = styled.div`
+// `keyframes`d enter animation (Task 15, step transitions): each wizard page
+// (Step1/2/3) mounts its own `WizardLayout`, so a fresh mount of THIS element
+// is exactly what happens on every step-to-step route change — the animation
+// runs once per navigation without any router-transition plumbing. Scoped to
+// the content column only (image panel + footer stay static, per spec).
+const stepEnter = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const Main = styled.main`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(10)};
   width: 100%;
+  animation: ${stepEnter} 200ms ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 // Hidden below `lg` (Figma: the photo panel is desktop-only) — the wizard
@@ -75,7 +96,14 @@ export function WizardLayout({ image, children }: WizardLayoutProps) {
   return (
     <Shell>
       <Content>
-        <Main>{children}</Main>
+        {/* tabIndex={-1}: skip-link target must be programmatically
+            focusable so following `#main-content` hands DOM focus off in
+            all browsers (APG skip-link pattern; same technique as
+            `StepHeading` — out of the Tab order, focusable only via the
+            fragment navigation). */}
+        <Main id="main-content" tabIndex={-1}>
+          {children}
+        </Main>
         <SiteFooter showSocials />
       </Content>
       <ImagePanel>

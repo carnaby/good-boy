@@ -3,6 +3,7 @@
 import styled, { css } from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
+import { CheckIcon } from '@/components/ui/icons';
 
 export interface StepperProps {
   current: 1 | 2 | 3;
@@ -85,20 +86,6 @@ const Connector = styled.span`
   background: ${({ theme }) => theme.colors.border};
 `;
 
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M3.5 8.5L6.5 11.5L12.5 4.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function statusOf(stepNumber: number, current: number): StepStatus {
   if (stepNumber < current) return 'done';
   if (stepNumber === current) return 'current';
@@ -126,7 +113,7 @@ export function Stepper({ current }: StepperProps) {
               <Circle $status={status}>
                 {status === 'done' ? (
                   <>
-                    <CheckIcon />
+                    <CheckIcon size={16} />
                     <VisuallyHidden>{t('steps.done')}</VisuallyHidden>
                   </>
                 ) : (

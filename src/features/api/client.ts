@@ -61,7 +61,10 @@ export async function apiFetch<T>(path: string, schema: z.ZodType<T>, init?: Req
     res = await fetch(`${apiBase()}${path}`, {
       ...init,
       headers: {
-        'Content-Type': 'application/json',
+        // Only set on requests that actually carry a body — a `Content-Type`
+        // header on a bodyless GET adds nothing but turns it into a
+        // non-"simple" CORS request, forcing a preflight OPTIONS round trip.
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
         ...init?.headers,
       },
     });

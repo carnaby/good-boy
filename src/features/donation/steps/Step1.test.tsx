@@ -144,6 +144,11 @@ describe('Step1', () => {
     await screen.findByText('Útulky sa nepodarilo načítať.', {}, { timeout: 3000 });
     const retryButton = screen.getByRole('button', { name: 'Skúsiť znova' });
 
+    // The retry UI replaces the `<select>` the "Útulok" label's `htmlFor`
+    // normally points at — it must still carry that label as an accessible
+    // group name (`role="group"` + `aria-labelledby`), not go unlabelled.
+    expect(screen.getByRole('group', { name: 'Útulok' })).toContainElement(retryButton);
+
     server.use(http.get('*/api/v1/shelters/', () => HttpResponse.json({ shelters: defaultShelters })));
     await user.click(retryButton);
 

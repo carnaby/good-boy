@@ -89,12 +89,22 @@ const Dl = styled.dl`
   width: 100%;
 `;
 
+// dt over dd below \`md\` (a narrow viewport leaves too little room for a
+// long label AND a long value on one line), side by side (label left /
+// value right) from \`md\` up.
 const Row = styled.div`
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing(4)};
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing(1)};
   width: 100%;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: ${({ theme }) => theme.spacing(4)};
+  }
 `;
 
 const Label = styled.dt`
@@ -111,7 +121,11 @@ const Value = styled.dd`
   line-height: ${({ theme }) => theme.typography.bodySemibold.lineHeight};
   font-weight: ${({ theme }) => theme.typography.bodySemibold.fontWeight};
   color: ${({ theme }) => theme.colors.textPrimary};
-  text-align: right;
+  text-align: left;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    text-align: right;
+  }
 `;
 
 /**

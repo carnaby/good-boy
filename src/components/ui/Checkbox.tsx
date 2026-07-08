@@ -2,6 +2,7 @@
 
 import styled from 'styled-components';
 import type { ReactNode } from 'react';
+import { CheckIcon } from './icons';
 
 export interface CheckboxProps {
   id: string;
@@ -67,20 +68,6 @@ const LabelText = styled.span`
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-function CheckIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path
-        d="M2.5 6L5 8.5L9.5 3.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function Checkbox({
   id,
   checked,
@@ -102,7 +89,7 @@ export function Checkbox({
         onChange={(event) => onChange(event.target.checked)}
       />
       <Box $checked={checked} $error={error}>
-        {checked ? <CheckIcon /> : null}
+        {checked ? <CheckIcon size={12} /> : null}
       </Box>
       <LabelText>{children}</LabelText>
     </LabelRow>

@@ -80,11 +80,18 @@ const CurrencySuffix = styled.span`
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
+// 3x2 below \`md\` (six chips don't comfortably fit one row on a phone at the
+// 48px height / ≥44px touch target this needs), a single row of 6 from
+// \`md\` up.
 const ChipRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: ${({ theme }) => theme.spacing(4)};
   width: 100%;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    grid-template-columns: repeat(6, 1fr);
+  }
 `;
 
 const Chip = styled.button<{ $active: boolean }>`

@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
+import { fieldLabelId } from '@/components/ui/FormField';
 import { useShelters } from '@/features/api/queries';
 
 export interface ShelterSelectA11yProps {
@@ -90,6 +91,15 @@ function ChevronDownIcon() {
  * keyboard/AT support comes for free. Renders one of three states depending
  * on `useShelters()`: disabled+loading placeholder, an inline error with a
  * retry button (no `<select>` in this state), or the populated dropdown.
+ *
+ * The error state has no `<select>` for the field's `<label htmlFor={id}>`
+ * (rendered by the parent `FormField`) to point at — a `<label for>` only
+ * associates with labelable elements (input/select/textarea/…), so leaving
+ * that dangling would silently drop the field's name for AT users. Instead
+ * the retry container itself becomes `role="group"` + `aria-labelledby`
+ * pointing at the SAME label (via `fieldLabelId`, `FormField`'s label id
+ * convention) — group semantics, not native label association, but it keeps
+ * "Útulok" as the accessible name either way.
  */
 export function ShelterSelect({ id, value, onChange, error, a11y }: ShelterSelectProps) {
   const { t } = useTranslation('donation');
@@ -97,7 +107,7 @@ export function ShelterSelect({ id, value, onChange, error, a11y }: ShelterSelec
 
   if (isError) {
     return (
-      <ErrorRow>
+      <ErrorRow role="group" aria-labelledby={fieldLabelId(id)}>
         <ErrorText>{t('step1.sheltersError')}</ErrorText>
         <Button type="button" variant="secondary" onClick={() => refetch()}>
           {t('common:actions.retry')}
